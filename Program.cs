@@ -25,3 +25,5 @@ Console.WriteLine($"Имя: {artem.Name}");
 Console.WriteLine($"Здоровье: {artem.Health}");
 Console.WriteLine($"Уровень: {artem.Level}");
 Console.WriteLine($"Опыт: {artem.Experience}");
+
+Console.WriteLine();

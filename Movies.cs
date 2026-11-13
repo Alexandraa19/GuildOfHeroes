@@ -18,4 +18,7 @@ public class Movies {
 
         Rating = newRating;
     }
+    public bool IsModern() {
+        return Year >= 2000;
+    }
 }

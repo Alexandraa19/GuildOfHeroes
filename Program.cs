@@ -43,34 +43,30 @@ Movies scream = new Movies("Крик", "Ужасы", 1996, 6.6);
 Movies guardians2 = new Movies("Стражи Галактики. Часть 2", "Фантастика", 2017, 7.6);
 
 scream.Rating =7.2;
-
-Console.WriteLine(">>> Фильм 1 <<<");
-Console.WriteLine($"Название: {spiderMan.Name}");
-Console.WriteLine($"Жанр: {spiderMan.Genre}");
-Console.WriteLine($"Год: {spiderMan.Year}");
-Console.WriteLine($"Рейтинг: {spiderMan.Rating}");
-
 Console.WriteLine();
-
-Console.WriteLine(">>> Фильм 2 <<<");
-Console.WriteLine($"Название: {scream.Name}");
-Console.WriteLine($"Жанр: {scream.Genre}");
-Console.WriteLine($"Год: {scream.Year}");
-Console.WriteLine($"Рейтинг: {scream.Rating}");
-
-Console.WriteLine();
-
-Console.WriteLine(">>> Фильм 3 <<<");
-Console.WriteLine($"Название: {guardians2.Name}");
-Console.WriteLine($"Жанр: {guardians2.Genre}");
-Console.WriteLine($"Год: {guardians2.Year}");
-Console.WriteLine($"Рейтинг: {guardians2.Rating}");
-Console.WriteLine();
-
-Console.WriteLine("Проверка ChangeRating ");
-
+Console.WriteLine(">>> Фильм 1: Человек-паук <<<");
 Console.WriteLine($"Рейтинг до: {spiderMan.Rating}");
 spiderMan.ChangeRating(9.1);
 Console.WriteLine($"После допустимого (9.1): {spiderMan.Rating}");
 spiderMan.ChangeRating(-5);
 Console.WriteLine($"После недопустимого (-5): {spiderMan.Rating}");
+Console.WriteLine($"Современный: {spiderMan.IsModern()}");
+
+Console.WriteLine();
+Console.WriteLine(">>> Фильм 2: Крик <<<");
+Console.WriteLine($"Рейтинг до: {scream.Rating}");
+scream.ChangeRating(7.2);
+Console.WriteLine($"После допустимого (7.2): {scream.Rating}");
+scream.ChangeRating(15);
+Console.WriteLine($"После недопустимого (15): {scream.Rating}");
+Console.WriteLine($"Современный: {scream.IsModern()}");
+
+Console.WriteLine();
+Console.WriteLine(">>> Фильм 3: Стражи Галактики. Часть 2 <<<");
+Console.WriteLine($"Рейтинг: {guardians2.Rating}");
+Console.WriteLine($"Современный: {guardians2.IsModern()}");
+
+Console.WriteLine();
+Console.WriteLine($"Человек-паук: рейтинг {spiderMan.Rating}, год {spiderMan.Year}");
+Console.WriteLine($"Крик: рейтинг {scream.Rating}, год {scream.Year}");
+Console.WriteLine($"Стражи галактики. часть 2:рейтинг {guardians2.Rating}, год {guardians2.Year}");

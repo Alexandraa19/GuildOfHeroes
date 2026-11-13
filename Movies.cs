@@ -10,4 +10,12 @@ public class Movies {
         Year = year;
         Rating = rating;   
     }
+    
+    public void ChangeRating(double newRating) {
+        if (newRating < 0 || newRating > 10) {
+            return;
+        }
+
+        Rating = newRating;
+    }
 }

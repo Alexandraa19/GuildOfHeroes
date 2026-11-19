@@ -112,8 +112,4 @@ public class Hero
                $"Опыт: {Experience}";
     }
 
-<<<<<<< HEAD
-}
-=======
-}
->>>>>>> 22007ca9d9ce354fc86e5807d00b835a4d4e79c2
+} 

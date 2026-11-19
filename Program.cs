@@ -9,84 +9,115 @@ alexander.TakeDamage(10);
 alexander.Heal(10);
 
 Guild guild = new Guild("Гильдия героев");
-guild.Heroes.Add(yaroslav);
-guild.Heroes.Add(anastasia);
-guild.Heroes.Add(artem);
-guild.Heroes.Add(alexander);
-guild.Heroes.Add(sergey);
+guild.AddHero(yaroslav);
+guild.AddHero(anastasia);
+guild.AddHero(artem);
+guild.AddHero(alexander);
+guild.AddHero(sergey);
 
+List<Hero> members = guild.GetMembers();
 Console.WriteLine($">>> {guild.Name}: перекличка <<<");
-Console.WriteLine($"Участников: {guild.Heroes.Count}");
+Console.WriteLine($"Участников: {guild.MemberCount}");
 
-if (guild.Heroes.Count > 0) {
-    Console.WriteLine($"Первый: {guild.Heroes[0].Name}");
-    Console.WriteLine($"Последний: {guild.Heroes[guild.Heroes.Count - 1].Name}");
+if (members.Count > 0) {
+    Console.WriteLine($"Первый: {members[0].Name}");
+    Console.WriteLine($"Последний: {members[members.Count - 1].Name}");
 }
 
 Console.WriteLine();
-foreach (Hero hero in guild.Heroes) {
+foreach (Hero hero in members) {
     Console.WriteLine(hero.GetInfo());
     Console.WriteLine();
 }
 
-int strongCount = 0;
-foreach (Hero hero in guild.Heroes) {
-    if (hero.Health >= 120) {
-        strongCount += 1;
-    }
-}
-Console.WriteLine($"Могут нести тяжёлые ящики (здоровье от 120): {strongCount}");
-
-
-if (guild.Heroes.Count > 0) {
-    Hero strongest = guild.Heroes[0];
-    foreach (Hero hero in guild.Heroes) {
-        if (hero.Health > strongest.Health) {
-            strongest = hero;
-        }
-    }
-    Console.WriteLine($"самый здоровый: {strongest.Name} ({strongest.Health})");
+Hero? found = guild.FindHeroByName(" аРтЁм ");
+if (found != null) {
+    Console.WriteLine($"Найден по запросу « аРтЁм »: {found.Name}");
+} else {
+    Console.WriteLine("По запросу « аРтЁм » никого нет.");
 }
 
+Console.WriteLine($"Повтор Александра принят: {guild.AddHero(alexander)}");
+Console.WriteLine($"Удалён отсутствующий: {guild.RemoveHero("Борис")}");
+Console.WriteLine($"Участников после проверок: {guild.MemberCount}");
 
-Console.WriteLine("\n мой проект ");
+Console.WriteLine($"Могут нести тяжёлые ящики (здоровье от 120): {guild.CountHealthy(120)}");
+
+Hero? strongest = guild.FindStrongest();
+if (strongest != null) {
+    Console.WriteLine($"Самый здоровый: {strongest.Name} ({strongest.Health})");
+}
+
+
+MovieCatalog catalog = new MovieCatalog("Мой каталог");
+
 Movies spiderMan = new Movies("Человек-паук: Нет пути домой", "Фантастика", 2021, 8.3);
 Movies scream = new Movies("Крик", "Ужасы", 1996, 6.6);
 Movies guardians2 = new Movies("Стражи Галактики. Часть 2", "Фантастика", 2017, 7.6);
 
-List<Movies> myMovies = new List<Movies>();
-myMovies.Add(spiderMan);
-myMovies.Add(scream);
-myMovies.Add(guardians2);
+Console.WriteLine($"Добавлен Человек-паук: {catalog.AddMovie(spiderMan)}");
+Console.WriteLine($"Добавлен Крик: {catalog.AddMovie(scream)}");
+Console.WriteLine($"Добавлен Стражи Галактики: {catalog.AddMovie(guardians2)}");
 
-Console.WriteLine($"всего фильмов: {myMovies.Count}");
 
-if (myMovies.Count > 0) {
-    Console.WriteLine($"Первый: {myMovies[0].Name}");
-    Console.WriteLine($"Последний: {myMovies[myMovies.Count - 1].Name}");
+Movies spiderManCopy = new Movies(" человек-паук: нет пути домой ", "Боевик", 2021, 9.0);
+Console.WriteLine($"Добавлена копия Человека-паука: {catalog.AddMovie(spiderManCopy)}");
+
+Movies? foundMovie = catalog.FindMovieByName("  крИк  ");
+if (foundMovie != null) {
+    Console.WriteLine($"Найден фильм: {foundMovie.Name}, Рейтинг: {foundMovie.Rating}");
+} else {
+    Console.WriteLine("Фильм не найден");
 }
 
-Console.WriteLine();
-foreach (Movies m in myMovies) {
-    Console.WriteLine($">>> {m.Name} <<<");
-    Console.WriteLine($"Рейтинг: {m.Rating}");
-    Console.WriteLine($"Современный: {m.IsModern()}");
-    Console.WriteLine();
+Movies? notFound = catalog.FindMovieByName("Аватар");
+if (notFound == null) {
+    Console.WriteLine("Аватар не найден в каталоге (вернулся null)");
 }
 
+Console.WriteLine($"Количество до удаления: {catalog.MovieCount}");
+Console.WriteLine($"Удалён Человек-паук: {catalog.RemoveMovie("Человек-паук: Нет пути домой")}");
+Console.WriteLine($"Количество после удаления: {catalog.MovieCount}");
 
-Movies badMovie = new Movies("фильм", "Тест", 2026, 15.0);
-myMovies.Add(badMovie);
-Console.WriteLine($"фильм с недопустимым рейтингом но конструктор исправил его на: {myMovies[myMovies.Count - 1].Rating}");
-int highRatingCount = 0;
-foreach (Movies m in myMovies) {
-    if (m.Rating > 7.0) {
-        highRatingCount++;
+public class MovieCatalog {
+    private List<Movies> _movies = new List<Movies>();
+    
+    public string Name { get; private set; }
+    
+    public int MovieCount {
+        get { return _movies.Count; }
+    }
+
+    public MovieCatalog(string name) {
+        Name = name;
+    }
+
+    public bool AddMovie(Movies movie) {
+        // Ключ - название фильма
+        if (FindMovieByName(movie.Name) != null) {
+            return false; 
+        }
+        _movies.Add(movie);
+        return true;
+    }
+
+    public Movies? FindMovieByName(string name) {
+        if (string.IsNullOrWhiteSpace(name)) {
+            return null;
+        }
+        string searchName = name.Trim();
+
+        foreach (Movies m in _movies) {
+            if (string.Equals(m.Name, searchName, StringComparison.OrdinalIgnoreCase)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    public bool RemoveMovie(string name) {
+        Movies? m = FindMovieByName(name);
+        if (m == null) return false;
+        return _movies.Remove(m);
     }
 }
-Console.WriteLine($"Фильмов с рейтингом выше 7.0: {highRatingCount}");
-spiderMan.ChangeRating(9.5);
-Console.WriteLine($"Рейтинг Человека-паука после изменения: {myMovies[0].Rating}");
-
-myMovies[0].ChangeRating(15.0);
-Console.WriteLine($"Рейтинг Человека-паука после недопустимого изменения: {myMovies[0].Rating}");

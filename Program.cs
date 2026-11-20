@@ -20,99 +20,93 @@ Console.WriteLine();
 
 QuestBoard board = new QuestBoard(guild);
 
-Quest floatQuest = new Quest(101, "Вернуть поплавок", 100, 30);
-Console.WriteLine($"Поручение добавлено: {board.AddQuest(floatQuest)}");
-Console.WriteLine($">>> №{floatQuest.Id}: {floatQuest.Title} <<<");
+board.AddQuest(new Quest(101, "Вернуть поплавок", 100, 30));
+board.TryAssign(101, "Сергей");
+board.TryComplete(101);
+board.AddQuest(new Quest(102, "Проверить нижнюю площадку", 100, 10));
+board.AddQuest(new Quest(103, "Снять мерки для насоса больницы", 100, 20));
+board.AddQuest(new Quest(104, "Обследовать ответвление", 100, 15));
 
-Console.WriteLine($"Назначение Сергея: {board.TryAssign(101, " сЕрГеЙ ")}");
-Hero? assigned = floatQuest.AssignedHero;
-if (assigned != null) {
-    Console.WriteLine($"Исполнитель: {assigned.Name}");
-}
-Console.WriteLine($"Опыт после назначения: {sergey.Experience}");
-
-Console.WriteLine($"Завершение: {board.TryComplete(101)}");
-Console.WriteLine($"Опыт после завершения: {sergey.Experience}");
-Console.WriteLine($"Повторное завершение: {board.TryComplete(101)}");
-Console.WriteLine($"Опыт после повтора: {sergey.Experience}");
+Console.WriteLine($"Сергей на №102: {board.TryAssign(102, "Сергей")}");
+Console.WriteLine($"Сергей на №103: {board.TryAssign(103, "Сергей")}");
+Console.WriteLine($"Отмена №102: {board.TryCancel(102)}");
+Console.WriteLine($"Сергей на №103: {board.TryAssign(103, "Сергей")}");
+Console.WriteLine($"Завершение №103: {board.TryComplete(103)}");
+Console.WriteLine($"Ярослав на №104: {board.TryAssign(104, "Ярослав")}");
+Console.WriteLine($"Удалить Сергея: {board.TryRemoveMember("Сергей")}");
 
 Console.WriteLine();
-Console.WriteLine(floatQuest.GetInfo());
+List<Quest> quests = board.GetQuests();
+foreach (Quest quest in quests) {
+    Console.WriteLine(quest.GetInfo());
+}
+Console.WriteLine($"Открыто: {board.CountByStatus(QuestStatus.Open)}, " +
+                  $"назначено: {board.CountByStatus(QuestStatus.Assigned)}, " +
+                  $"выполнено: {board.CountByStatus(QuestStatus.Completed)}, " +
+                  $"отменено: {board.CountByStatus(QuestStatus.Cancelled)}");
+
+Quest? yaroslavQuest = board.FindActiveQuest("Ярослав");
+if (yaroslavQuest != null) {
+    Console.WriteLine($"Ярослав сейчас: №{yaroslavQuest.Id} «{yaroslavQuest.Title}»");
+}
+Quest? sergeyQuest = board.FindActiveQuest("Сергей");
+if (sergeyQuest == null) {
+    Console.WriteLine("Сергей сейчас: свободен");
+}
+
+Console.WriteLine();
 Console.WriteLine(sergey.GetInfo());
 
+Console.WriteLine("\n мой проект (Состояния операции)");
 
-
-
-Console.WriteLine("\n мой проект (Операция с фильмом) ");
-
-MovieCatalog catalog = new MovieCatalog("Мой каталог");
 Movies spiderMan = new Movies("Человек-паук: Нет пути домой", "Фантастика", 2021, 8.3);
 Movies scream = new Movies("Крик", "Ужасы", 1996, 6.6);
-catalog.AddMovie(spiderMan);
-catalog.AddMovie(scream);
 
+MovieOperation watchOp = new MovieOperation(1, "Вечерний просмотр");
 
-MovieOperation watchOp = new MovieOperation(1, "Просмотр", 8.0); 
+Console.WriteLine($"Старт просмотра Человека-паука: {watchOp.TryStart(spiderMan)}");
 
-Console.WriteLine($"Старт операции с Криком: {watchOp.TryStart(scream)}"); 
-Console.WriteLine($"Старт операции с Человеком-пауком: {watchOp.TryStart(spiderMan)}");
-Console.WriteLine($"Завершение операции: {watchOp.TryFinish()}");
-Console.WriteLine($"Новый рейтинг Человека-паука в каталоге: {catalog.FindMovieByName("Человек-паук: Нет пути домой")?.Rating}");
-Console.WriteLine($"Повторное завершение: {watchOp.TryFinish()}");
+Console.WriteLine($"Повторный старт: {watchOp.TryStart(spiderMan)}");
+
+Console.WriteLine($"Завершение просмотра: {watchOp.TryFinish()}");
+
+MovieOperation watchOp2 = new MovieOperation(2, "Второй просмотр");
+Console.WriteLine($"Старт новой операции на того же фильма: {watchOp2.TryStart(spiderMan)}");
+
+public enum MovieStatus {
+    Open,
+    Active,
+    Finished,
+    Cancelled
+}
 
 public class MovieOperation {
     public int Id { get; private set; }
     public string Title { get; private set; }
-    public double MinRating { get; private set; }
     public Movies? TargetMovie { get; private set; }
-    public bool IsFinished { get; private set; }
+    public MovieStatus Status { get; private set; }
 
-    public MovieOperation(int id, string title, double minRating) {
+    public MovieOperation(int id, string title) {
         Id = id;
         Title = title;
-        MinRating = minRating;
         TargetMovie = null;
-        IsFinished = false;
+        Status = MovieStatus.Open;
     }
 
     public bool TryStart(Movies movie) {
-        if (IsFinished) return false;
-        if (TargetMovie != null) return false;
-        if (movie.Rating < MinRating) return false;
-
+        if (Status != MovieStatus.Open) return false;
+        
         TargetMovie = movie;
+        Status = MovieStatus.Active;
         return true;
     }
-
+    
     public bool TryFinish() {
-        if (IsFinished) return false;
+        if (Status != MovieStatus.Active) return false;
         if (TargetMovie == null) return false;
-
-        TargetMovie.ChangeRating(TargetMovie.Rating + 0.5); 
-        IsFinished = true;
+        TargetMovie.ChangeRating(TargetMovie.Rating + 0.5);
+        
+        Status = MovieStatus.Finished;
         return true;
-    }
-}
-
-public class MovieCatalog {
-    private List<Movies> _movies = new List<Movies>();
-    public string Name { get; private set; }
-    public int MovieCount { get { return _movies.Count; } }
-
-    public MovieCatalog(string name) { Name = name; }
-
-    public bool AddMovie(Movies movie) {
-        if (FindMovieByName(movie.Name) != null) return false;
-        _movies.Add(movie);
-        return true;
-    }
-
-    public Movies? FindMovieByName(string name) {
-        if (string.IsNullOrWhiteSpace(name)) return null;
-        string searchName = name.Trim();
-        foreach (Movies m in _movies) {
-            if (string.Equals(m.Name, searchName, StringComparison.OrdinalIgnoreCase)) return m;
-        }
-        return null;
     }
 }

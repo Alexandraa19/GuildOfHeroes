@@ -1,4 +1,4 @@
-﻿// Probe.Run(); 
+﻿// Probe.Run();
 Hero yaroslav = new Hero("Ярослав", 100);
 Hero anastasia = new Hero("Анастасия", 90);
 Hero artem = new Hero("Артём", 120);
@@ -15,109 +15,104 @@ guild.AddHero(artem);
 guild.AddHero(alexander);
 guild.AddHero(sergey);
 
-List<Hero> members = guild.GetMembers();
-Console.WriteLine($">>> {guild.Name}: перекличка <<<");
-Console.WriteLine($"Участников: {guild.MemberCount}");
+Console.WriteLine($">>> {guild.Name}: участников {guild.MemberCount} <<<");
+Console.WriteLine();
 
-if (members.Count > 0) {
-    Console.WriteLine($"Первый: {members[0].Name}");
-    Console.WriteLine($"Последний: {members[members.Count - 1].Name}");
+QuestBoard board = new QuestBoard(guild);
+
+Quest floatQuest = new Quest(101, "Вернуть поплавок", 100, 30);
+Console.WriteLine($"Поручение добавлено: {board.AddQuest(floatQuest)}");
+Console.WriteLine($">>> №{floatQuest.Id}: {floatQuest.Title} <<<");
+
+Console.WriteLine($"Назначение Сергея: {board.TryAssign(101, " сЕрГеЙ ")}");
+Hero? assigned = floatQuest.AssignedHero;
+if (assigned != null) {
+    Console.WriteLine($"Исполнитель: {assigned.Name}");
 }
+Console.WriteLine($"Опыт после назначения: {sergey.Experience}");
+
+Console.WriteLine($"Завершение: {board.TryComplete(101)}");
+Console.WriteLine($"Опыт после завершения: {sergey.Experience}");
+Console.WriteLine($"Повторное завершение: {board.TryComplete(101)}");
+Console.WriteLine($"Опыт после повтора: {sergey.Experience}");
 
 Console.WriteLine();
-foreach (Hero hero in members) {
-    Console.WriteLine(hero.GetInfo());
-    Console.WriteLine();
-}
+Console.WriteLine(floatQuest.GetInfo());
+Console.WriteLine(sergey.GetInfo());
 
-Hero? found = guild.FindHeroByName(" аРтЁм ");
-if (found != null) {
-    Console.WriteLine($"Найден по запросу « аРтЁм »: {found.Name}");
-} else {
-    Console.WriteLine("По запросу « аРтЁм » никого нет.");
-}
 
-Console.WriteLine($"Повтор Александра принят: {guild.AddHero(alexander)}");
-Console.WriteLine($"Удалён отсутствующий: {guild.RemoveHero("Борис")}");
-Console.WriteLine($"Участников после проверок: {guild.MemberCount}");
 
-Console.WriteLine($"Могут нести тяжёлые ящики (здоровье от 120): {guild.CountHealthy(120)}");
 
-Hero? strongest = guild.FindStrongest();
-if (strongest != null) {
-    Console.WriteLine($"Самый здоровый: {strongest.Name} ({strongest.Health})");
-}
-
+Console.WriteLine("\n мой проект (Операция с фильмом) ");
 
 MovieCatalog catalog = new MovieCatalog("Мой каталог");
-
 Movies spiderMan = new Movies("Человек-паук: Нет пути домой", "Фантастика", 2021, 8.3);
 Movies scream = new Movies("Крик", "Ужасы", 1996, 6.6);
-Movies guardians2 = new Movies("Стражи Галактики. Часть 2", "Фантастика", 2017, 7.6);
-
-Console.WriteLine($"Добавлен Человек-паук: {catalog.AddMovie(spiderMan)}");
-Console.WriteLine($"Добавлен Крик: {catalog.AddMovie(scream)}");
-Console.WriteLine($"Добавлен Стражи Галактики: {catalog.AddMovie(guardians2)}");
+catalog.AddMovie(spiderMan);
+catalog.AddMovie(scream);
 
 
-Movies spiderManCopy = new Movies(" человек-паук: нет пути домой ", "Боевик", 2021, 9.0);
-Console.WriteLine($"Добавлена копия Человека-паука: {catalog.AddMovie(spiderManCopy)}");
+MovieOperation watchOp = new MovieOperation(1, "Просмотр", 8.0); 
 
-Movies? foundMovie = catalog.FindMovieByName("  крИк  ");
-if (foundMovie != null) {
-    Console.WriteLine($"Найден фильм: {foundMovie.Name}, Рейтинг: {foundMovie.Rating}");
-} else {
-    Console.WriteLine("Фильм не найден");
+Console.WriteLine($"Старт операции с Криком: {watchOp.TryStart(scream)}"); 
+Console.WriteLine($"Старт операции с Человеком-пауком: {watchOp.TryStart(spiderMan)}");
+Console.WriteLine($"Завершение операции: {watchOp.TryFinish()}");
+Console.WriteLine($"Новый рейтинг Человека-паука в каталоге: {catalog.FindMovieByName("Человек-паук: Нет пути домой")?.Rating}");
+Console.WriteLine($"Повторное завершение: {watchOp.TryFinish()}");
+
+public class MovieOperation {
+    public int Id { get; private set; }
+    public string Title { get; private set; }
+    public double MinRating { get; private set; }
+    public Movies? TargetMovie { get; private set; }
+    public bool IsFinished { get; private set; }
+
+    public MovieOperation(int id, string title, double minRating) {
+        Id = id;
+        Title = title;
+        MinRating = minRating;
+        TargetMovie = null;
+        IsFinished = false;
+    }
+
+    public bool TryStart(Movies movie) {
+        if (IsFinished) return false;
+        if (TargetMovie != null) return false;
+        if (movie.Rating < MinRating) return false;
+
+        TargetMovie = movie;
+        return true;
+    }
+
+    public bool TryFinish() {
+        if (IsFinished) return false;
+        if (TargetMovie == null) return false;
+
+        TargetMovie.ChangeRating(TargetMovie.Rating + 0.5); 
+        IsFinished = true;
+        return true;
+    }
 }
-
-Movies? notFound = catalog.FindMovieByName("Аватар");
-if (notFound == null) {
-    Console.WriteLine("Аватар не найден в каталоге (вернулся null)");
-}
-
-Console.WriteLine($"Количество до удаления: {catalog.MovieCount}");
-Console.WriteLine($"Удалён Человек-паук: {catalog.RemoveMovie("Человек-паук: Нет пути домой")}");
-Console.WriteLine($"Количество после удаления: {catalog.MovieCount}");
 
 public class MovieCatalog {
     private List<Movies> _movies = new List<Movies>();
-    
     public string Name { get; private set; }
-    
-    public int MovieCount {
-        get { return _movies.Count; }
-    }
+    public int MovieCount { get { return _movies.Count; } }
 
-    public MovieCatalog(string name) {
-        Name = name;
-    }
+    public MovieCatalog(string name) { Name = name; }
 
     public bool AddMovie(Movies movie) {
-        // Ключ - название фильма
-        if (FindMovieByName(movie.Name) != null) {
-            return false; 
-        }
+        if (FindMovieByName(movie.Name) != null) return false;
         _movies.Add(movie);
         return true;
     }
 
     public Movies? FindMovieByName(string name) {
-        if (string.IsNullOrWhiteSpace(name)) {
-            return null;
-        }
+        if (string.IsNullOrWhiteSpace(name)) return null;
         string searchName = name.Trim();
-
         foreach (Movies m in _movies) {
-            if (string.Equals(m.Name, searchName, StringComparison.OrdinalIgnoreCase)) {
-                return m;
-            }
+            if (string.Equals(m.Name, searchName, StringComparison.OrdinalIgnoreCase)) return m;
         }
         return null;
-    }
-
-    public bool RemoveMovie(string name) {
-        Movies? m = FindMovieByName(name);
-        if (m == null) return false;
-        return _movies.Remove(m);
     }
 }
